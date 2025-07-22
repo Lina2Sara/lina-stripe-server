@@ -3,8 +3,20 @@ const router = express.Router();
 const Stripe = require('stripe');
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
+// Mapping der Produktnamen zu den jeweiligen Preis-IDs
+const PRICE_MAP = {
+  basic: 'price_1RnHJtFbcBwxuX1QyXOW0qXq',
+  earlybird: 'price_1RnHIDFbcBwxuX1Q34pn7cWg',
+  probe: 'price_1RnHHDFbcBwxuX1QduU14Qba',
+};
+
 router.post('/', async (req, res) => {
-  const { teacherId, email } = req.body;
+  const { teacherId, email, plan } = req.body;
+
+  const priceId = PRICE_MAP[plan?.toLowerCase()];
+  if (!priceId) {
+    return res.status(400).json({ error: 'Ungültiger Tarifname übergeben.' });
+  }
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -13,7 +25,7 @@ router.post('/', async (req, res) => {
       customer_email: email,
       line_items: [
         {
-          price: 'price_abc123', // TODO: Deine Stripe Preis-ID hier
+          price: priceId,
           quantity: 1,
         },
       ],
@@ -21,6 +33,7 @@ router.post('/', async (req, res) => {
       cancel_url: `${process.env.BASE_URL}/payment-cancel`,
       metadata: {
         teacherId,
+        plan,
       },
     });
 
