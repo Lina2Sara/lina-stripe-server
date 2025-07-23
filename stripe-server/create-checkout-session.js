@@ -13,6 +13,7 @@ const PRICE_MAP = {
 router.post('/', async (req, res) => {
   const { teacherId, email, plan } = req.body;
 
+  // Preis-ID anhand des Plans ermitteln
   const priceId = PRICE_MAP[plan?.toLowerCase()];
   if (!priceId) {
     return res.status(400).json({ error: 'Ungültiger Tarifname übergeben.' });
@@ -29,8 +30,8 @@ router.post('/', async (req, res) => {
           quantity: 1,
         },
       ],
-      success_url: `${process.env.BASE_URL}/payment-success`,
-      cancel_url: `${process.env.BASE_URL}/payment-cancel`,
+      success_url: `https://lina-vocal-muse.lovable.app/payment-success`,
+      cancel_url: `https://lina-vocal-muse.lovable.app/payment-cancel`,
       metadata: {
         teacherId,
         plan,
@@ -45,3 +46,4 @@ router.post('/', async (req, res) => {
 });
 
 module.exports = router;
+
