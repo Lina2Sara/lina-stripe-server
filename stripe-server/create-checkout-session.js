@@ -13,7 +13,6 @@ const PRICE_MAP = {
 router.post('/', async (req, res) => {
   const { teacherId, email, plan } = req.body;
 
-  // Preis-ID anhand des Plans ermitteln
   const priceId = PRICE_MAP[plan?.toLowerCase()];
   if (!priceId) {
     return res.status(400).json({ error: 'Ungültiger Tarifname übergeben.' });
@@ -21,8 +20,8 @@ router.post('/', async (req, res) => {
 
   try {
     const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
-      payment_method_types: ['card'],
+      mode: 'subscription', // weiterhin Abo-Modus
+      payment_method_types: ['automatic'], // lässt Stripe alle erlaubten Methoden anzeigen
       customer_email: email,
       line_items: [
         {
@@ -37,6 +36,15 @@ router.post('/', async (req, res) => {
         plan,
       },
     });
+
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error('Fehler bei Checkout-Session:', err.message);
+    res.status(500).json({ error: 'Fehler bei Stripe' });
+  }
+});
+
+module.exports = router;
 
     res.json({ url: session.url });
   } catch (err) {
